@@ -56,6 +56,7 @@ Several enhancements and tests could be implemented to extend the functionality 
 - **Activity Cleanup**: Automatically delete activities once they are processed to reduce exposure.
 - **Client Compilation**: Package the client as a standalone executable using tools like `pyinstaller`.
 - **Enhanced Data Exfiltration**: Explore using GPX files for data exfiltration, although they are extensively sanitized by Strava.
+- **Encode data in UTF-8**: Use UTF-8 data smuggling to hide query and response data to the human eye! (cf. this [article](https://paulbutler.org/2025/smuggling-arbitrary-data-through-an-emoji/))
 
 ---
 
