@@ -2,6 +2,16 @@
 
 This project is a small proof of concept (PoC) of a command-and-control (C2) agent/server that uses the Strava API to facilitate covert communication. The name "Concept C2" is a wordplay on the famous rowing machine, the Concept2, and a C2 server.
 
+```mermaid
+sequenceDiagram
+    Server-->> Strava: Update the AUTH_TOKEN in MAIN_ACTIVITY
+    Strava-->> Client: Recover AUTH_TOKEN from MAIN_ACTIVITY
+    Server->> Strava: Create activity with command as description
+    Strava->>Client: Read activities and executes commands
+    Client ->> Strava: Write commands results prefixed with activity ID
+    Strava ->> Server : Retrieve commands results
+```
+
 ## Features
 
 The following functionalities are currently implemented:
