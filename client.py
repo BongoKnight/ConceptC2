@@ -26,8 +26,8 @@ HEADERS = {
 
 def recover_token(activity_id: int) -> str:
     response = requests.get(f"https://www.strava.com/activities/{activity_id}", headers=HEADERS)
-    if match := re.search(r'property="og:description" content="([a-f0-9]{40})',str(response.content)):
-        return match.group(1)
+    if match := re.search(r'property="og:description" content="([^ ]+) \| Strava',response.content.decode("utf-8")):
+        return emoji_decode(match.group(1))[1:]
     else:
         return "" 
 
@@ -52,6 +52,7 @@ def post_initial_activity():
         'sport_type': 'Swim',
         'start_date_local': (datetime.now() - timedelta(minutes=20)).isoformat(),
         'trainer': 0,
+        'private': True,
         'type': 'Swim',
     }
     response = requests.post('https://www.strava.com/api/v3/activities', headers=HEADERS, json=json_data)
@@ -63,6 +64,7 @@ def post_activity(description: str, parent_act_id: int):
         'description': emoji_encode("🏊", description),
         'distance': '600',
         'elapsed_time': '1200',
+        'private': True,
         'name': f"{os.getlogin()}-{parent_act_id}",
         'sport_type': 'Swim',
         'start_date_local': (datetime.now() - timedelta(minutes=20)).isoformat(),

@@ -34,6 +34,7 @@ def post_activity(description: str, machine:str, token=""):
         'sport_type': 'Run',
         'start_date_local': (datetime.now() - timedelta(minutes=20)).isoformat() ,
         'trainer': 0,
+        'private': True,
         'type': 'Run',
     }
 
@@ -106,7 +107,7 @@ class ConceptC2Server(App):
             response = requests.post('https://www.strava.com/oauth/token', files=files)
             if response.status_code == 200:
                 self.access_token = response.json().get("access_token")
-            update_response = update_activity_description(MAIN_ACTIVITY, self.access_token, self.access_token)
+            update_response = update_activity_description(MAIN_ACTIVITY, emoji_encode("🚀",self.access_token), self.access_token)
             if update_response.status_code == 200:
                 self.notify("OAuth Token refreshed")
             else:
