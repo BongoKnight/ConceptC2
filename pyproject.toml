@@ -10,3 +10,8 @@ dependencies = [
     "requests>=2.32.3",
     "textual>=2.1.2",
 ]
+
+[dependency-groups]
+dev = [
+    "nuitka>=2.6.8",
+]

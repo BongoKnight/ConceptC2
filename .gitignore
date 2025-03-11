@@ -12,3 +12,9 @@ wheels/
 # Code secret
 .env
 code
+
+# Build
+client.build/
+client.dist/
+client.onefile-build/
+client.bin

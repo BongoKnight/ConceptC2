@@ -51,8 +51,14 @@ Several variables must be configured before running the project:
 - `MAIN_ACTIVITY`: A public Strava activity used to share new API tokens between the server and clients.
 - `CLIENT_ID` and `CLIENT_SECRET`: Credentials provided by Strava to generate and refresh API tokens.
 
+### Client/Agent build
+
 While for testing purpose these variables could be provided in a `.env` file, if you are willing to install the client elsewhere YOU should hardcode the `MAIN_ACTIVITY`.
-    
+
+```bash
+>>> uv run python -m nuitka --standalone --onefile client.py
+Nuitka: Successfully created 'client.bin'.
+```
 
 ### Running the Client
 
